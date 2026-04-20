@@ -140,7 +140,7 @@ function setupData() {
   var us = ss.getSheetByName(USERS_SHEET)||ss.insertSheet(USERS_SHEET); us.clear();
   us.appendRow(['Username','Password','Role','DisplayName']);
   us.appendRow(['admin','admin123','admin','Administrator']);
-  us.appendRow(['shyam','teach123','admin','Ms. Shyam']);
+  us.appendRow(['shyam','teach123','admin','Mr. Shyam']);
 
   var rs = ss.getSheetByName(REPORTS_SHEET)||ss.insertSheet(REPORTS_SHEET); rs.clear();
   rs.appendRow(['ID','Date','ReportedBy','Category','Location','Urgency','Description','Status','AdminNotes']);
