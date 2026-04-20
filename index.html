@@ -27,7 +27,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select id="rp-cat" required class="w-full rounded-lg border p-2.5 text-sm">
-            <option>Electrical</option><option>Plumbing</option><option>Furniture</option><option>AC/Cooling</option><option>Doors/Windows</option><option>Cleaning</option><option>IT/Network</option><option>Safety</option><option>Other</option>
+            <option>Loading...</option>
           </select>
         </div>
         <div>
@@ -62,6 +62,7 @@
 </footer>
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4OufMC_sXjvziFt8hQ-AxbHoa4giIA5IlTU440drUzh4excpqa9SLSzHsJVWkpsa6/exec';
+async function loadCats(){try{const c=await(await fetch(SCRIPT_URL+'?action=categories',{redirect:'follow'})).json();document.getElementById('rp-cat').innerHTML=c.map(x=>`<option>${x}</option>`).join('');}catch(e){}}
 async function handleSubmit(e){
   e.preventDefault();
   const btn=document.getElementById('submit-btn');btn.disabled=true;btn.textContent='Submitting...';
@@ -76,7 +77,7 @@ async function handleSubmit(e){
   btn.disabled=false;btn.textContent='Report Issue';
 }
 function resetForm(){document.getElementById('report-form').reset();document.getElementById('report-form').classList.remove('hidden');document.getElementById('success-msg').classList.add('hidden');}
-window.onload=function(){document.getElementById('report-form').addEventListener('submit',handleSubmit);};
+window.onload=function(){document.getElementById('report-form').addEventListener('submit',handleSubmit);loadCats();};
 </script>
 </body>
 </html>

@@ -5,6 +5,7 @@
 
 const SPREADSHEET_ID = '1h5yMbciRW4HWzxPM99pGyadKbdPsJnr6VPpcL9tEWq0';
 const REPORTS_SHEET = 'Reports';
+const CATEGORIES_SHEET = 'Categories';
 const USERS_SHEET = 'Users';
 
 function getSheet(name) {
@@ -33,6 +34,7 @@ function doGet(e) {
   var result;
   switch (action) {
     case 'reports': result = sheetToArray(REPORTS_SHEET); break;
+    case 'categories': result = getList(CATEGORIES_SHEET); break;
     case 'stats': result = getStats(); break;
     default: result = {error:'Unknown'};
   }
@@ -50,6 +52,7 @@ function doPost(e) {
     switch (data.action) {
       case 'updateStatus': result = updateStatus(data); break;
       case 'deleteReport': result = deleteReport(data); break;
+      case 'saveCategories': result = saveList(CATEGORIES_SHEET, 'Category', data.items); break;
       case 'setupData': setupData(); result = {success:true}; break;
       default: result = {error:'Unknown'};
     }
@@ -105,6 +108,22 @@ function getStats() {
   return {total:total, reported:reported, inProgress:inProgress, fixed:fixed, categories:catCount, urgencies:urgCount};
 }
 
+function getList(sheetName) {
+  var sheet = getSheet(sheetName);
+  if (!sheet) return [];
+  var data = sheet.getDataRange().getDisplayValues();
+  var r = [];
+  for (var i = 1; i < data.length; i++) if (data[i][0]) r.push(data[i][0].trim());
+  return r;
+}
+
+function saveList(sheetName, header, items) {
+  var sheet = getSheet(sheetName) || SpreadsheetApp.openById(SPREADSHEET_ID).insertSheet(sheetName);
+  sheet.clear(); sheet.appendRow([header]);
+  (items||[]).forEach(function(v){sheet.appendRow([v]);});
+  return {success:true};
+}
+
 function login(username, password) {
   var sheet = getSheet(USERS_SHEET);
   if (!sheet) return {success:false, message:'Users sheet not found'};
@@ -125,5 +144,9 @@ function setupData() {
 
   var rs = ss.getSheetByName(REPORTS_SHEET)||ss.insertSheet(REPORTS_SHEET); rs.clear();
   rs.appendRow(['ID','Date','ReportedBy','Category','Location','Urgency','Description','Status','AdminNotes']);
+
+  var cs = ss.getSheetByName(CATEGORIES_SHEET)||ss.insertSheet(CATEGORIES_SHEET); cs.clear();
+  cs.appendRow(['Category']);
+  ['Electrical','Plumbing','Furniture','AC/Cooling','Doors/Windows','Cleaning','IT/Network','Safety','Other'].forEach(function(c){cs.appendRow([c]);});
   Logger.log('Setup complete');
 }

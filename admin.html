@@ -48,11 +48,21 @@
         <option value="">All Urgency</option><option value="Critical">Critical</option><option value="High">High</option><option value="Normal">Normal</option><option value="Low">Low</option>
       </select>
       <select id="fcat" onchange="render()" class="px-3 py-2 border rounded-lg text-sm">
-        <option value="">All Categories</option><option>Electrical</option><option>Plumbing</option><option>Furniture</option><option>AC/Cooling</option><option>Doors/Windows</option><option>Cleaning</option><option>IT/Network</option><option>Safety</option><option>Other</option>
+        <option value="">All Categories</option>
       </select>
     </div>
     <div id="report-list" class="space-y-2"></div>
     <p id="no-reports" class="hidden text-center text-gray-400 py-8">No reports found.</p>
+
+    <!-- Category Management -->
+    <details class="bg-white rounded-xl shadow-lg p-4 mt-4">
+      <summary class="font-bold text-gray-800 cursor-pointer text-sm">⚙ Manage Categories</summary>
+      <div class="mt-3">
+        <div id="cat-tags" class="flex flex-wrap gap-2 mb-2"></div>
+        <div class="flex gap-2"><input id="new-cat" type="text" placeholder="New category" class="rounded border p-2 text-sm flex-1"><button onclick="addCat()" class="text-orange-600 text-sm font-medium">+ Add</button></div>
+        <button onclick="saveCats()" class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold">Save Categories</button>
+      </div>
+    </details>
   </main>
 </div>
 
@@ -82,7 +92,7 @@
 
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4OufMC_sXjvziFt8hQ-AxbHoa4giIA5IlTU440drUzh4excpqa9SLSzHsJVWkpsa6/exec';
-let reports=[],currentUser=null;
+let reports=[],categories=[],currentUser=null;
 const F=url=>fetch(url,{redirect:'follow'}).then(r=>r.json());
 const P=async(body)=>{try{const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...body,auth:{username:currentUser.username,password:currentUser._pw}})});try{return await r.json();}catch(e){return{success:true};}}catch(e){return{success:true};}};
 function toast(msg){const t=document.createElement('div');t.className='fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
@@ -92,13 +102,14 @@ const borderC={Reported:'border-red-500','In Progress':'border-amber-500',Fixed:
 const urgC={Critical:'bg-red-600 text-white',High:'bg-orange-500 text-white',Normal:'bg-blue-100 text-blue-700',Low:'bg-gray-100 text-gray-600'};
 
 async function loadData(){
-  const [reps,stats]=await Promise.all([F(SCRIPT_URL+'?action=reports'),F(SCRIPT_URL+'?action=stats')]);
-  reports=reps.reverse();
+  const [reps,stats,cats]=await Promise.all([F(SCRIPT_URL+'?action=reports'),F(SCRIPT_URL+'?action=stats'),F(SCRIPT_URL+'?action=categories')]);
+  reports=reps.reverse();categories=cats;
+  document.getElementById('fcat').innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option>${c}</option>`).join('');
   document.getElementById('s-total').textContent=stats.total;
   document.getElementById('s-reported').textContent=stats.reported;
   document.getElementById('s-progress').textContent=stats.inProgress;
   document.getElementById('s-fixed').textContent=stats.fixed;
-  render();
+  render();renderCats();
 }
 
 function render(){
@@ -138,6 +149,10 @@ function openUpdate(id,status){
 function closeM(){const m=document.getElementById('update-modal');m.classList.add('hidden');m.classList.remove('flex');}
 async function handleUpdate(e){e.preventDefault();await P({action:'updateStatus',id:document.getElementById('upd-id').value,status:document.getElementById('upd-status').value,adminNotes:document.getElementById('upd-notes').value});closeM();toast('Updated!');setTimeout(loadData,1500);}
 async function delReport(id){if(!confirm('Delete?'))return;await P({action:'deleteReport',id});toast('Deleted!');setTimeout(loadData,1500);}
+
+function renderCats(){document.getElementById('cat-tags').innerHTML=categories.map((c,i)=>`<span class="inline-flex items-center gap-1 bg-orange-50 text-orange-700 px-2 py-1 rounded-full text-xs">${c}<button onclick="categories.splice(${i},1);renderCats()" class="hover:text-red-500">&times;</button></span>`).join('');}
+function addCat(){const v=document.getElementById('new-cat').value.trim();if(v&&!categories.includes(v))categories.push(v);document.getElementById('new-cat').value='';renderCats();}
+async function saveCats(){await P({action:'saveCategories',items:categories});toast('Saved!');setTimeout(loadData,2000);}
 
 async function handleLogin(e){
   e.preventDefault();const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value.trim();
