@@ -61,7 +61,7 @@
   <p class="text-xs text-gray-400 mt-1">Mentor: Ms. Shyam</p>
 </footer>
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4OufMC_sXjvziFt8hQ-AxbHoa4giIA5IlTU440drUzh4excpqa9SLSzHsJVWkpsa6/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzh8qlkRGp0e0-bCTJI74gck7JYv5Tb2EQkDaDIrApm0dzNi7CETBJWbSlyjjWkslXk/exec';
 async function loadCats(){try{const c=await(await fetch(SCRIPT_URL+'?action=categories',{redirect:'follow'})).json();document.getElementById('rp-cat').innerHTML=c.map(x=>`<option>${x}</option>`).join('');}catch(e){}}
 async function handleSubmit(e){
   e.preventDefault();

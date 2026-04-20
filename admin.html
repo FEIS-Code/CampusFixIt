@@ -91,7 +91,7 @@
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4OufMC_sXjvziFt8hQ-AxbHoa4giIA5IlTU440drUzh4excpqa9SLSzHsJVWkpsa6/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzh8qlkRGp0e0-bCTJI74gck7JYv5Tb2EQkDaDIrApm0dzNi7CETBJWbSlyjjWkslXk/exec';
 let reports=[],categories=[],currentUser=null;
 const F=url=>fetch(url,{redirect:'follow'}).then(r=>r.json());
 const P=async(body)=>{try{const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...body,auth:{username:currentUser.username,password:currentUser._pw}})});try{return await r.json();}catch(e){return{success:true};}}catch(e){return{success:true};}};
