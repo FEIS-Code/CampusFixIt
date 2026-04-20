@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Fix-It — FEIS</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'); body{font-family:'Inter',sans-serif;}</style>
+</head>
+<body class="min-h-screen bg-gray-50">
+<header class="bg-white shadow-md p-3 sm:p-4">
+  <div class="max-w-lg mx-auto text-center">
+    <h1 class="text-xl sm:text-2xl font-extrabold"><span class="text-red-800">FEIS</span> <span class="text-orange-600">Campus Fix-It</span></h1>
+    <p class="text-gray-500 text-sm mt-1">Report maintenance issues on campus</p>
+  </div>
+</header>
+<main class="max-w-lg mx-auto p-3 sm:p-6 mt-4">
+  <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+    <h2 class="text-lg font-bold text-gray-800 mb-4">🔧 Report an Issue</h2>
+    <form id="report-form" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+        <input id="rp-name" type="text" required placeholder="e.g. Ms. Rajsree" class="w-full rounded-lg border p-2.5 text-sm">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select id="rp-cat" required class="w-full rounded-lg border p-2.5 text-sm">
+            <option>Electrical</option><option>Plumbing</option><option>Furniture</option><option>AC/Cooling</option><option>Doors/Windows</option><option>Cleaning</option><option>IT/Network</option><option>Safety</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
+          <select id="rp-urg" class="w-full rounded-lg border p-2.5 text-sm">
+            <option>Low</option><option selected>Normal</option><option>High</option><option>Critical</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+        <input id="rp-loc" type="text" required placeholder="e.g. Room 9A, Boys Washroom, Cafeteria" class="w-full rounded-lg border p-2.5 text-sm">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <textarea id="rp-desc" rows="3" required placeholder="Describe the issue in detail..." class="w-full rounded-lg border p-2.5 text-sm"></textarea>
+      </div>
+      <button type="submit" id="submit-btn" class="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 text-sm">Report Issue</button>
+    </form>
+    <div id="success-msg" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+      <p class="text-green-700 font-semibold text-lg">✓ Issue Reported!</p>
+      <p class="text-green-600 text-sm mt-1">Ticket: <span id="rp-id" class="font-mono font-bold"></span></p>
+      <button onclick="resetForm()" class="mt-3 text-sm text-orange-600 font-medium hover:underline">Report another issue</button>
+    </div>
+  </div>
+</main>
+<footer class="max-w-lg mx-auto px-3 py-6 text-center text-gray-500">
+  <p class="font-semibold mb-1">An App by <span class="text-orange-600 font-bold">Team Campus Fix-It</span></p>
+  <p class="text-xs">Yeshwanth (Grade 9) &bull; Ved Varshith (Grade 8)</p>
+  <p class="text-xs">Veda Hamsini, Venkata Ashrith &amp; Yashwitha (Grade 7)</p>
+  <p class="text-xs text-gray-400 mt-1">Mentor: Ms. Shyam</p>
+</footer>
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4OufMC_sXjvziFt8hQ-AxbHoa4giIA5IlTU440drUzh4excpqa9SLSzHsJVWkpsa6/exec';
+async function handleSubmit(e){
+  e.preventDefault();
+  const btn=document.getElementById('submit-btn');btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    const r=await(await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({
+      action:'submit',name:document.getElementById('rp-name').value.trim(),
+      category:document.getElementById('rp-cat').value,urgency:document.getElementById('rp-urg').value,
+      location:document.getElementById('rp-loc').value.trim(),description:document.getElementById('rp-desc').value.trim()
+    })})).json();
+    if(r.success){document.getElementById('rp-id').textContent=r.id;document.getElementById('report-form').classList.add('hidden');document.getElementById('success-msg').classList.remove('hidden');}
+  }catch(e){}
+  btn.disabled=false;btn.textContent='Report Issue';
+}
+function resetForm(){document.getElementById('report-form').reset();document.getElementById('report-form').classList.remove('hidden');document.getElementById('success-msg').classList.add('hidden');}
+window.onload=function(){document.getElementById('report-form').addEventListener('submit',handleSubmit);};
+</script>
+</body>
+</html>

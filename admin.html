@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Fix-It — Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap'); body{font-family:'Inter',sans-serif;}</style>
+</head>
+<body class="min-h-screen bg-gray-50">
+<header class="bg-white shadow-md p-3 sm:p-4 sticky top-0 z-20">
+  <div class="max-w-5xl mx-auto flex justify-between items-center">
+    <h1 class="text-base sm:text-xl font-extrabold"><span class="text-orange-600">Campus Fix-It</span> <span class="text-gray-600">Admin</span></h1>
+    <div class="flex items-center gap-2">
+      <span id="user-badge" class="hidden text-xs font-medium text-orange-700 bg-orange-50 px-2 py-1 rounded-full"></span>
+      <button id="logout-btn" onclick="logout()" class="hidden px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold">Logout</button>
+    </div>
+  </div>
+</header>
+
+<div id="login-screen" class="max-w-sm mx-auto mt-20 p-3">
+  <div class="bg-white rounded-xl shadow-lg p-6">
+    <h2 class="text-lg font-bold text-orange-600 mb-4 text-center">🔧 Admin Login</h2>
+    <form id="login-form" class="space-y-3">
+      <input id="login-user" type="text" required placeholder="Username" class="w-full rounded-lg border p-2.5 text-sm">
+      <input id="login-pass" type="password" required placeholder="Password" class="w-full rounded-lg border p-2.5 text-sm">
+      <p id="login-error" class="text-red-600 text-xs hidden"></p>
+      <button type="submit" class="w-full py-2.5 bg-orange-600 text-white font-semibold rounded-lg text-sm">Login</button>
+    </form>
+  </div>
+</div>
+
+<div id="admin" class="hidden">
+  <main class="max-w-5xl mx-auto p-3 sm:p-6">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      <div class="bg-white rounded-xl shadow p-3 text-center"><div class="text-2xl font-bold text-gray-700" id="s-total">0</div><div class="text-xs text-gray-500">Total</div></div>
+      <div class="bg-white rounded-xl shadow p-3 text-center"><div class="text-2xl font-bold text-red-500" id="s-reported">0</div><div class="text-xs text-gray-500">Reported</div></div>
+      <div class="bg-white rounded-xl shadow p-3 text-center"><div class="text-2xl font-bold text-amber-500" id="s-progress">0</div><div class="text-xs text-gray-500">In Progress</div></div>
+      <div class="bg-white rounded-xl shadow p-3 text-center"><div class="text-2xl font-bold text-green-600" id="s-fixed">0</div><div class="text-xs text-gray-500">Fixed</div></div>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+      <input id="search" type="text" placeholder="Search..." oninput="render()" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+      <select id="fstatus" onchange="render()" class="px-3 py-2 border rounded-lg text-sm">
+        <option value="">All Status</option><option value="Reported">Reported</option><option value="In Progress">In Progress</option><option value="Fixed">Fixed</option>
+      </select>
+      <select id="furg" onchange="render()" class="px-3 py-2 border rounded-lg text-sm">
+        <option value="">All Urgency</option><option value="Critical">Critical</option><option value="High">High</option><option value="Normal">Normal</option><option value="Low">Low</option>
+      </select>
+      <select id="fcat" onchange="render()" class="px-3 py-2 border rounded-lg text-sm">
+        <option value="">All Categories</option><option>Electrical</option><option>Plumbing</option><option>Furniture</option><option>AC/Cooling</option><option>Doors/Windows</option><option>Cleaning</option><option>IT/Network</option><option>Safety</option><option>Other</option>
+      </select>
+    </div>
+    <div id="report-list" class="space-y-2"></div>
+    <p id="no-reports" class="hidden text-center text-gray-400 py-8">No reports found.</p>
+  </main>
+</div>
+
+<div id="update-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-4">
+  <div class="bg-white p-5 rounded-xl shadow-2xl w-full max-w-sm">
+    <div class="flex justify-between items-center mb-4 border-b pb-2">
+      <h2 class="text-lg font-bold text-orange-600">Update Report</h2>
+      <button onclick="closeM()" class="text-gray-400 hover:text-gray-600">✕</button>
+    </div>
+    <form id="update-form" class="space-y-3">
+      <input type="hidden" id="upd-id">
+      <div class="text-xs text-gray-500 mb-2">Ticket: <span id="upd-id-display" class="font-mono font-bold"></span></div>
+      <div>
+        <label class="text-xs font-medium text-gray-700">Status</label>
+        <select id="upd-status" class="w-full rounded-lg border p-2 text-sm mt-1">
+          <option value="Reported">Reported</option><option value="In Progress">In Progress</option><option value="Fixed">Fixed</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-700">Admin Notes</label>
+        <textarea id="upd-notes" rows="3" class="w-full rounded-lg border p-2 text-sm mt-1" placeholder="e.g. Electrician scheduled for Monday..."></textarea>
+      </div>
+      <button type="submit" class="w-full py-2.5 bg-orange-600 text-white font-semibold rounded-lg text-sm">Update</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbw4OufMC_sXjvziFt8hQ-AxbHoa4giIA5IlTU440drUzh4excpqa9SLSzHsJVWkpsa6/exec';
+let reports=[],currentUser=null;
+const F=url=>fetch(url,{redirect:'follow'}).then(r=>r.json());
+const P=async(body)=>{try{const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({...body,auth:{username:currentUser.username,password:currentUser._pw}})});try{return await r.json();}catch(e){return{success:true};}}catch(e){return{success:true};}};
+function toast(msg){const t=document.createElement('div');t.className='fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+
+const statusC={Reported:'bg-red-100 text-red-700 border-red-400','In Progress':'bg-amber-100 text-amber-700 border-amber-400',Fixed:'bg-green-100 text-green-700 border-green-400'};
+const borderC={Reported:'border-red-500','In Progress':'border-amber-500',Fixed:'border-green-500'};
+const urgC={Critical:'bg-red-600 text-white',High:'bg-orange-500 text-white',Normal:'bg-blue-100 text-blue-700',Low:'bg-gray-100 text-gray-600'};
+
+async function loadData(){
+  const [reps,stats]=await Promise.all([F(SCRIPT_URL+'?action=reports'),F(SCRIPT_URL+'?action=stats')]);
+  reports=reps.reverse();
+  document.getElementById('s-total').textContent=stats.total;
+  document.getElementById('s-reported').textContent=stats.reported;
+  document.getElementById('s-progress').textContent=stats.inProgress;
+  document.getElementById('s-fixed').textContent=stats.fixed;
+  render();
+}
+
+function render(){
+  const s=document.getElementById('search').value.toLowerCase(),st=document.getElementById('fstatus').value,urg=document.getElementById('furg').value,cat=document.getElementById('fcat').value;
+  const f=reports.filter(r=>(!st||r.Status===st)&&(!urg||r.Urgency===urg)&&(!cat||r.Category===cat)&&(!s||(r.ReportedBy||'').toLowerCase().includes(s)||(r.Description||'').toLowerCase().includes(s)||(r.Location||'').toLowerCase().includes(s)));
+  document.getElementById('no-reports').classList.toggle('hidden',f.length>0);
+  document.getElementById('report-list').innerHTML=f.map(r=>{
+    const status=r.Status||'Reported';
+    return `<div class="bg-white rounded-lg shadow p-3 border-l-4 ${borderC[status]||'border-gray-300'}">
+      <div class="flex justify-between items-start gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap mb-1">
+            <span class="font-semibold text-sm">${r.Category}</span>
+            <span class="text-xs px-1.5 py-0.5 rounded-full ${urgC[r.Urgency]||''}">${r.Urgency}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full border ${statusC[status]||''}">${status}</span>
+          </div>
+          <div class="text-xs text-gray-500">${r.ReportedBy} · ${r.Location} · ${r.Date}</div>
+          <p class="text-sm text-gray-700 mt-1">${r.Description}</p>
+          ${r.AdminNotes?`<div class="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded">Admin: ${r.AdminNotes}</div>`:''}
+        </div>
+        <div class="flex flex-col gap-1 flex-shrink-0">
+          <button onclick="openUpdate('${r.ID}','${status}')" class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">Update</button>
+          <button onclick="delReport('${r.ID}')" class="px-2 py-1 text-red-400 text-xs hover:text-red-600">Delete</button>
+        </div>
+      </div>
+      <div class="text-[10px] text-gray-400 mt-1 font-mono">${r.ID}</div>
+    </div>`;
+  }).join('');
+}
+
+function openUpdate(id,status){
+  document.getElementById('upd-id').value=id;document.getElementById('upd-id-display').textContent=id;
+  document.getElementById('upd-status').value=status;
+  const rep=reports.find(r=>r.ID===id);document.getElementById('upd-notes').value=rep?rep.AdminNotes||'':'';
+  const m=document.getElementById('update-modal');m.classList.remove('hidden');m.classList.add('flex');
+}
+function closeM(){const m=document.getElementById('update-modal');m.classList.add('hidden');m.classList.remove('flex');}
+async function handleUpdate(e){e.preventDefault();await P({action:'updateStatus',id:document.getElementById('upd-id').value,status:document.getElementById('upd-status').value,adminNotes:document.getElementById('upd-notes').value});closeM();toast('Updated!');setTimeout(loadData,1500);}
+async function delReport(id){if(!confirm('Delete?'))return;await P({action:'deleteReport',id});toast('Deleted!');setTimeout(loadData,1500);}
+
+async function handleLogin(e){
+  e.preventDefault();const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value.trim();
+  try{const r=await(await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'login',username:u,password:p})})).json();
+    if(r.success&&r.role==='admin'){currentUser={...r,_pw:p};sessionStorage.setItem('cfAdmin',JSON.stringify(currentUser));showAdmin();}
+    else{document.getElementById('login-error').textContent=r.message||'Admin only';document.getElementById('login-error').classList.remove('hidden');}
+  }catch(e){document.getElementById('login-error').textContent='Error';document.getElementById('login-error').classList.remove('hidden');}
+}
+function logout(){currentUser=null;sessionStorage.removeItem('cfAdmin');location.reload();}
+function showAdmin(){document.getElementById('login-screen').classList.add('hidden');document.getElementById('admin').classList.remove('hidden');document.getElementById('user-badge').textContent=currentUser.displayName;document.getElementById('user-badge').classList.remove('hidden');document.getElementById('logout-btn').classList.remove('hidden');loadData();}
+
+window.onload=function(){
+  const s=sessionStorage.getItem('cfAdmin');if(s){currentUser=JSON.parse(s);showAdmin();}
+  document.getElementById('login-form').addEventListener('submit',handleLogin);
+  document.getElementById('update-form').addEventListener('submit',handleUpdate);
+};
+</script>
+</body>
+</html>
